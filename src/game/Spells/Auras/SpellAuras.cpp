@@ -24,6 +24,7 @@
 #include "SpellScript.h"
 #include "Vehicle.h"
 #include "ArenaSpectator.h"
+#include "SpellHistory.h"
 
 AuraApplication::AuraApplication(Unit* target, Unit* caster, Aura* aura, uint8 effMask):
 _target(target), _base(aura), _removeMode(AURA_REMOVE_NONE), _slot(MAX_AURAS),

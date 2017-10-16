@@ -735,6 +735,24 @@ void Object::SetUInt16Value(uint16 index, uint8 offset, uint16 value)
     }
 }
 
+void Object::SetGuidValue(uint16 index, ObjectGuid value)
+{
+    ASSERT(index + 1 < m_valuesCount || PrintIndexError(index, true));
+    if (*((ObjectGuid*)&(m_uint32Values[index])) != value)
+    {
+        *((ObjectGuid*)&(m_uint32Values[index])) = value;
+        _changesMask.SetBit(index);
+        _changesMask.SetBit(index + 1);
+
+        //AddToObjectUpdateIfNeeded();
+        if (m_inWorld && !m_objectUpdated)
+        {
+            sObjectAccessor->AddUpdateObject(this);
+            m_objectUpdated = true;
+        }
+    }
+}
+
 void Object::SetStatFloatValue(uint16 index, float value)
 { 
     if (value < 0)
@@ -989,6 +1007,10 @@ void WorldObject::setActive(bool on)
 
     if (GetTypeId() == TYPEID_PLAYER)
         return;
+    //bot
+	if (on == false && GetTypeId() == TYPEID_UNIT && ToCreature()->IsNPCBot())
+		return;
+	//end bot
 
     m_isActive = on;
 
@@ -2063,6 +2085,11 @@ TempSummon* Map::SummonCreature(uint32 entry, Position const& pos, SummonPropert
             summon = new Puppet(properties, summoner ? summoner->GetGUID() : 0);
             break;
         case UNIT_MASK_TOTEM:
+            //npcbot: totem emul step 1
+			if (summoner && summoner->GetTypeId() == TYPEID_UNIT && summoner->ToCreature()->GetIAmABot())
+				summon = new Totem(properties, summoner->ToCreature()->GetBotOwnerGuid());
+			else
+			//end npcbot
             summon = new Totem(properties, summoner ? summoner->GetGUID() : 0);
             break;
         case UNIT_MASK_MINION:
@@ -2086,6 +2113,12 @@ TempSummon* Map::SummonCreature(uint32 entry, Position const& pos, SummonPropert
     summon->InitStats(duration);
     AddToMap(summon->ToCreature(), (IS_PLAYER_GUID(summon->GetOwnerGUID()) || (summoner && summoner->GetTransport())));
     summon->InitSummon();
+
+    //npcbot: totem emul step 2
+	//if (mask == UNIT_MASK_TOTEM)
+		if (summoner && summoner->GetTypeId() == TYPEID_UNIT && summoner->ToCreature()->GetIAmABot())
+			summoner->ToCreature()->OnBotSummon(summon);
+	//end npcbot
 
     //ObjectAccessor::UpdateObjectVisibility(summon);
 

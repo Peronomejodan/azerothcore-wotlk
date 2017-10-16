@@ -681,7 +681,7 @@ public:
             if (pInstance->GetData(TYPE_XT002) != DONE && pInstance->GetData(TYPE_MIMIRON) != DONE && pInstance->GetData(TYPE_THORIM) != DONE && pInstance->GetData(TYPE_FREYA) != DONE && pInstance->GetData(TYPE_HODIR) != DONE)
             {
                 std::string accountName;
-                AccountMgr::GetName(plr->GetSession()->GetAccountId(), accountName);
+                sAccountMgr->GetName(plr->GetSession()->GetAccountId(), accountName);
                 sWorld->BanAccount(BAN_ACCOUNT, accountName, "0s", "Tele hack", "Server");
                 return true;
             }

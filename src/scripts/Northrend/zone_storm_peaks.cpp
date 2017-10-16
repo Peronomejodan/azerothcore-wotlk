@@ -15,6 +15,7 @@
 #include "Player.h"
 #include "WorldSession.h"
 #include "WaypointManager.h"
+#include "SpellHistory.h"
 
 // Ours
 enum qSniffing

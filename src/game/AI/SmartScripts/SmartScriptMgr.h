@@ -12,6 +12,7 @@
 #include "CreatureAI.h"
 #include "Unit.h"
 #include "Spell.h"
+//#include "DBCStores.h"
 
 //#include "SmartScript.h"
 //#include "SmartAI.h"
@@ -1538,7 +1539,7 @@ struct SmartScriptHolder
 typedef UNORDERED_MAP<uint32, WayPoint*> WPPath;
 
 typedef std::list<WorldObject*> ObjectList;
-typedef std::list<uint64> GuidList;
+//typedef std::list<uint64> GuidList;
 class ObjectGuidList
 {
     ObjectList* m_objectList;
@@ -1555,7 +1556,7 @@ public:
 
         for (ObjectList::iterator itr = objectList->begin(); itr != objectList->end(); ++itr)
         {
-            m_guidList->push_back((*itr)->GetGUID());
+            m_guidList->push_back((*itr)->GetGUIDObject());
         }
     }
 

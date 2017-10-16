@@ -210,7 +210,7 @@ void RandomPlayerbotFactory::CreateRandomBots()
 			{
 				Field* fields = results->Fetch();
 				uint32 accountID = fields[0].GetUInt32();
-				AccountOpResult result = AccountMgr::DeleteAccount(accountID);
+				AccountOpResult result = sAccountMgr->DeleteAccount(accountID);
 				switch (result)
 				{
 				case AOR_OK:
@@ -256,7 +256,7 @@ void RandomPlayerbotFactory::CreateRandomBots()
 		{
 			password += (char)urand('!', 'z');
 		}
-		AccountOpResult result = AccountMgr::CreateAccount(accountName, password);
+		AccountOpResult result = sAccountMgr->CreateAccount(accountName, password);
 		switch (result)
 		{
 		case AOR_OK:
@@ -299,7 +299,7 @@ void RandomPlayerbotFactory::CreateRandomBots()
 
 		sPlayerbotAIConfig.randomBotAccounts.push_back(accountId);
 
-		int count = AccountMgr::GetCharactersCount(accountId);
+		int count = sAccountMgr->GetCharactersCount(accountId);
 		sLog->outError("%d Characters for account %d ", count, accountId);
 		totalRandomBotChars += count;
 		if (count > 0)
@@ -317,7 +317,7 @@ void RandomPlayerbotFactory::CreateRandomBots()
 			}
 		}
 
-		totalRandomBotChars += AccountMgr::GetCharactersCount(accountId);
+		totalRandomBotChars += sAccountMgr->GetCharactersCount(accountId);
 	}
 
 	sLog->outBasic("%d random bot accounts with %d characters available", sPlayerbotAIConfig.randomBotAccounts.size(), totalRandomBotChars);

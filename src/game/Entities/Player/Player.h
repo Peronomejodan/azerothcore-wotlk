@@ -43,6 +43,10 @@ class PlayerSocial;
 class SpellCastTargets;
 class UpdateMask;
 
+// NpcBot mod
+class BotMgr;
+// end NpcBot mod
+
 // Playerbot mod
 class PlayerbotAI;
 class PlayerbotMgr;
@@ -1333,7 +1337,7 @@ class Player : public Unit, public GridObject<Player>
         void AddArmorProficiency(uint32 newflag) { m_ArmorProficiency |= newflag; }
         uint32 GetWeaponProficiency() const { return m_WeaponProficiency; }
         uint32 GetArmorProficiency() const { return m_ArmorProficiency; }
-
+        bool IsUseEquipedWeapon(bool mainhand) const;
         bool IsTwoHandUsed() const
         {
             Item* mainItem = GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_MAINHAND);
@@ -2568,6 +2572,20 @@ class Player : public Unit, public GridObject<Player>
                 return modelData->CollisionHeight;
             }
         }
+		/*********************************************************/
+		/***                     BOT SYSTEM                    ***/
+		/*********************************************************/
+		void SetBotMgr(BotMgr* mgr) { ASSERT(!_botMgr); _botMgr = mgr; }
+		BotMgr* GetBotMgr() const { return _botMgr; }
+		bool HaveBot() const;
+		uint8 GetNpcBotsCount(bool inWorldOnly = false) const;
+		uint8 GetBotFollowDist() const;
+		void SetBotFollowDist(int8 dist);
+		void SetBotsShouldUpdateStats();
+		void RemoveAllBots(uint8 removetype = 0);
+		/*********************************************************/
+		/***                 END BOT SYSTEM                    ***/
+		/*********************************************************/
 
         // OURS
         // saving
@@ -2890,6 +2908,13 @@ class Player : public Unit, public GridObject<Player>
         AchievementMgr* GetAchievementMgr() const { return m_achievementMgr; }
 
     private:
+		/*********************************************************/
+		/***                     BOT SYSTEM                    ***/
+		/*********************************************************/
+		BotMgr* _botMgr;
+		/*********************************************************/
+		/***                END BOT SYSTEM                     ***/
+		/*********************************************************/
         // internal common parts for CanStore/StoreItem functions
         InventoryResult CanStoreItem_InSpecificSlot(uint8 bag, uint8 slot, ItemPosCountVec& dest, ItemTemplate const* pProto, uint32& count, bool swap, Item* pSrcItem) const;
         InventoryResult CanStoreItem_InBag(uint8 bag, ItemPosCountVec& dest, ItemTemplate const* pProto, uint32& count, bool merge, bool non_specialized, Item* pSrcItem, uint8 skip_bag, uint8 skip_slot) const;

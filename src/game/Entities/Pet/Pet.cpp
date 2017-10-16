@@ -22,6 +22,7 @@
 #include "Battleground.h"
 #include "InstanceScript.h"
 #include "ArenaSpectator.h"
+#include "SpellHistory.h"
 
 #define PET_XP_FACTOR 0.05f
 

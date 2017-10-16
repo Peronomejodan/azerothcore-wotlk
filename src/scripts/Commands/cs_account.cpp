@@ -97,7 +97,7 @@ public:
         if (!accountName || !password)
             return false;
 
-        AccountOpResult result = AccountMgr::CreateAccount(std::string(accountName), std::string(password));
+        AccountOpResult result = sAccountMgr->CreateAccount(std::string(accountName), std::string(password));
         switch (result)
         {
         case AOR_OK:
@@ -143,14 +143,14 @@ public:
             return false;
 
         std::string accountName = account;
-        if (!AccountMgr::normalizeString(accountName))
+        if (!sAccountMgr->normalizeString(accountName))
         {
             handler->PSendSysMessage(LANG_ACCOUNT_NOT_EXIST, accountName.c_str());
             handler->SetSentErrorMessage(true);
             return false;
         }
 
-        uint32 accountId = AccountMgr::GetId(accountName);
+        uint32 accountId = sAccountMgr->GetId(accountName);
         if (!accountId)
         {
             handler->PSendSysMessage(LANG_ACCOUNT_NOT_EXIST, accountName.c_str());
@@ -164,7 +164,7 @@ public:
         if (handler->HasLowerSecurityAccount(nullptr, accountId, true))
             return false;
 
-        AccountOpResult result = AccountMgr::DeleteAccount(accountId);
+        AccountOpResult result = sAccountMgr->DeleteAccount(accountId);
         switch (result)
         {
         case AOR_OK:
@@ -344,7 +344,7 @@ public:
             return false;
         }
 
-        if (!AccountMgr::CheckPassword(handler->GetSession()->GetAccountId(), std::string(oldPassword)))
+        if (!sAccountMgr->CheckPassword(handler->GetSession()->GetAccountId(), std::string(oldPassword)))
         {
             handler->SendSysMessage(LANG_COMMAND_WRONGOLDPASSWORD);
             handler->SetSentErrorMessage(true);
@@ -358,7 +358,7 @@ public:
             return false;
         }
 
-        AccountOpResult result = AccountMgr::ChangePassword(handler->GetSession()->GetAccountId(), std::string(newPassword));
+        AccountOpResult result = sAccountMgr->ChangePassword(handler->GetSession()->GetAccountId(), std::string(newPassword));
         switch (result)
         {
         case AOR_OK:
@@ -404,21 +404,21 @@ public:
                 return false;
 
             accountId = player->GetSession()->GetAccountId();
-            AccountMgr::GetName(accountId, accountName);
+            sAccountMgr->GetName(accountId, accountName);
             exp = account;
         }
         else
         {
             ///- Convert Account name to Upper Format
             accountName = account;
-            if (!AccountMgr::normalizeString(accountName))
+            if (!sAccountMgr->normalizeString(accountName))
             {
                 handler->PSendSysMessage(LANG_ACCOUNT_NOT_EXIST, accountName.c_str());
                 handler->SetSentErrorMessage(true);
                 return false;
             }
 
-            accountId = AccountMgr::GetId(accountName);
+            accountId = sAccountMgr->GetId(accountName);
             if (!accountId)
             {
                 handler->PSendSysMessage(LANG_ACCOUNT_NOT_EXIST, accountName.c_str());
@@ -477,7 +477,7 @@ public:
         if (isAccountNameGiven)
         {
             targetAccountName = arg1;
-            if (!AccountMgr::normalizeString(targetAccountName))
+            if (!sAccountMgr->normalizeString(targetAccountName))
             {
                 handler->PSendSysMessage(LANG_ACCOUNT_NOT_EXIST, targetAccountName.c_str());
                 handler->SetSentErrorMessage(true);
@@ -495,17 +495,17 @@ public:
         }
 
         // handler->getSession() == nullptr only for console
-        targetAccountId = (isAccountNameGiven) ? AccountMgr::GetId(targetAccountName) : handler->getSelectedPlayer()->GetSession()->GetAccountId();
+        targetAccountId = (isAccountNameGiven) ? sAccountMgr->GetId(targetAccountName) : handler->getSelectedPlayer()->GetSession()->GetAccountId();
         int32 gmRealmID = (isAccountNameGiven) ? atoi(arg3) : atoi(arg2);
         uint32 playerSecurity;
         if (handler->GetSession())
-            playerSecurity = AccountMgr::GetSecurity(handler->GetSession()->GetAccountId(), gmRealmID);
+            playerSecurity = sAccountMgr->GetSecurity(handler->GetSession()->GetAccountId(), gmRealmID);
         else
             playerSecurity = SEC_CONSOLE;
 
         // can set security level only for target with less security and to less security that we have
         // This is also reject self apply in fact
-        targetSecurity = AccountMgr::GetSecurity(targetAccountId, gmRealmID);
+        targetSecurity = sAccountMgr->GetSecurity(targetAccountId, gmRealmID);
         if (targetSecurity >= playerSecurity || gm >= playerSecurity)
         {
             handler->SendSysMessage(LANG_YOURS_SECURITY_IS_LOW);
@@ -514,7 +514,7 @@ public:
         }
 
         // Check and abort if the target gm has a higher rank on one of the realms and the new realm is -1
-        if (gmRealmID == -1 && !AccountMgr::IsConsoleAccount(playerSecurity))
+        if (gmRealmID == -1 && !sAccountMgr->IsConsoleAccount(playerSecurity))
         {
             PreparedStatement* stmt = LoginDatabase.GetPreparedStatement(LOGIN_SEL_ACCOUNT_ACCESS_GMLEVEL_TEST);
 
@@ -589,14 +589,14 @@ public:
             return false;
 
         std::string accountName = account;
-        if (!AccountMgr::normalizeString(accountName))
+        if (!sAccountMgr->normalizeString(accountName))
         {
             handler->PSendSysMessage(LANG_ACCOUNT_NOT_EXIST, accountName.c_str());
             handler->SetSentErrorMessage(true);
             return false;
         }
 
-        uint32 targetAccountId = AccountMgr::GetId(accountName);
+        uint32 targetAccountId = sAccountMgr->GetId(accountName);
         if (!targetAccountId)
         {
             handler->PSendSysMessage(LANG_ACCOUNT_NOT_EXIST, accountName.c_str());
@@ -616,7 +616,7 @@ public:
             return false;
         }
 
-        AccountOpResult result = AccountMgr::ChangePassword(targetAccountId, password);
+        AccountOpResult result = sAccountMgr->ChangePassword(targetAccountId, password);
 
         switch (result)
         {

@@ -907,7 +907,7 @@ public:
 
         if (target)
         {
-            target->ResurrectPlayer(!AccountMgr::IsPlayerAccount(target->GetSession()->GetSecurity()) ? 1.0f : 0.5f);
+            target->ResurrectPlayer(!sAccountMgr->IsPlayerAccount(target->GetSession()->GetSecurity()) ? 1.0f : 0.5f);
             target->SpawnCorpseBones();
             target->SaveToDB(false, false);
         }
@@ -1151,7 +1151,7 @@ public:
     static bool HandleUnstuckCommand(ChatHandler* handler, char const* args)
     {
         //No args required for players
-        if (handler->GetSession() && AccountMgr::IsPlayerAccount(handler->GetSession()->GetSecurity()))
+        if (handler->GetSession() && sAccountMgr->IsPlayerAccount(handler->GetSession()->GetSecurity()))
         {
             // 7355: "Stuck"
             if (Player* player = handler->GetSession()->GetPlayer())

@@ -172,7 +172,7 @@ int RASocket::check_access_level(const std::string& user)
 {
     std::string safeUser = user;
 
-    AccountMgr::normalizeString(safeUser);
+    sAccountMgr->normalizeString(safeUser);
 
     PreparedStatement* stmt = LoginDatabase.GetPreparedStatement(LOGIN_SEL_ACCOUNT_ACCESS);
     stmt->setString(0, safeUser);
@@ -203,12 +203,12 @@ int RASocket::check_access_level(const std::string& user)
 int RASocket::check_password(const std::string& user, const std::string& pass)
 {
     std::string safe_user = user;
-    AccountMgr::normalizeString(safe_user);
+    sAccountMgr->normalizeString(safe_user);
 
     std::string safe_pass = pass;
-    AccountMgr::normalizeString(safe_pass);
+    sAccountMgr->normalizeString(safe_pass);
 
-    std::string hash = AccountMgr::CalculateShaPassHash(safe_user, safe_pass);
+    std::string hash = sAccountMgr->CalculateShaPassHash(safe_user, safe_pass);
 
     PreparedStatement* stmt = LoginDatabase.GetPreparedStatement(LOGIN_SEL_CHECK_PASSWORD_BY_NAME);
 

@@ -84,7 +84,7 @@ class AnticheatMovementHandlerScript : public MovementHandlerScript
 	}
     void OnPlayerMove(Player* player, MovementInfo mi, uint32 opcode) override
     {
-		if (!AccountMgr::IsGMAccount(player->GetSession()->GetSecurity()) || sConfigMgr->GetBoolDefault("Anticheat.EnabledOnGmAccounts", false))
+		if (!sAccountMgr->IsGMAccount(player->GetSession()->GetSecurity()) || sConfigMgr->GetBoolDefault("Anticheat.EnabledOnGmAccounts", false))
 			sAnticheatMgr->StartHackDetection(player, mi, opcode);
     }
 };

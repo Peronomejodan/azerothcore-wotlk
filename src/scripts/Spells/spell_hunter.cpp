@@ -18,6 +18,7 @@
 #include "GridNotifiersImpl.h"
 #include "SpellScript.h"
 #include "SpellAuraEffects.h"
+#include "SpellHistory.h"
 
 enum HunterSpells
 {

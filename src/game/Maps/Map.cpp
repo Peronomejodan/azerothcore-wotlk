@@ -24,6 +24,9 @@
 #include "VMapFactory.h"
 #include "LFGMgr.h"
 #include "Chat.h"
+//npcbot
+#include "../../AI/NpcBots/botmgr.h"
+//end npcbot
 
 union u_map_magic
 {
@@ -2315,6 +2318,21 @@ uint32 Map::GetPlayersCountExceptGMs() const
     uint32 count = 0;
     for (MapRefManager::const_iterator itr = m_mapRefManager.begin(); itr != m_mapRefManager.end(); ++itr)
         if (!itr->GetSource()->IsGameMaster())
+            //npcbot - count npcbots as group members (event if not in group)
+			if (itr->GetSource()->HaveBot() && BotMgr::LimitBots(this))
+			{
+				++count;
+				BotMap const* botmap = itr->GetSource()->GetBotMgr()->GetBotMap();
+				for (BotMap::const_iterator itr = botmap->begin(); itr != botmap->end(); ++itr)
+				{
+					Creature* cre = itr->second;
+					if (!cre || !cre->IsInWorld() || cre->FindMap() != this)
+						continue;
+					++count;
+				}
+			}
+			else
+				//end npcbot
             ++count;
     return count;
 }
@@ -2335,6 +2353,25 @@ template <>
 void Map::AddToActive(Creature* c)
 { 
     AddToActiveHelper(c);
+    // also not allow unloading spawn grid to prevent creating creature clone at load
+    /*if (!c->IsPet() && c->GetDBTableGUIDLow())
+    {
+        float x, y, z;
+        c->GetRespawnPosition(x, y, z);
+        GridCoord p = Trinity::ComputeGridCoord(x, y);
+        if (getNGrid(p.x_coord, p.y_coord))
+            getNGrid(p.x_coord, p.y_coord)->incUnloadActiveLock();
+		//bot
+		else if (c->GetIAmABot())
+			EnsureGridLoadedForActiveObject(Cell(Trinity::ComputeCellCoord(c->GetPositionX(), c->GetPositionY())), c);
+		//end bot
+        else
+        {
+            GridCoord p2 = Trinity::ComputeGridCoord(c->GetPositionX(), c->GetPositionY());
+            TC_LOG_ERROR("maps", "Active creature (GUID: %u Entry: %u) added to grid[%u, %u] but spawn grid[%u, %u] was not loaded.",
+                c->GetGUID().GetCounter(), c->GetEntry(), p.x_coord, p.y_coord, p2.x_coord, p2.y_coord);
+        }
+    }*/
 }
 
 template<>
@@ -2359,6 +2396,25 @@ template <>
 void Map::RemoveFromActive(Creature* c)
 { 
     RemoveFromActiveHelper(c);
+    // also allow unloading spawn grid
+    /*if (!c->IsPet() && c->GetDBTableGUIDLow())
+    {
+        float x, y, z;
+        c->GetRespawnPosition(x, y, z);
+        GridCoord p = Trinity::ComputeGridCoord(x, y);
+        if (getNGrid(p.x_coord, p.y_coord))
+            getNGrid(p.x_coord, p.y_coord)->decUnloadActiveLock();
+		//bot
+		else if (c->GetIAmABot())
+			EnsureGridLoaded(Cell(Trinity::ComputeCellCoord(c->GetPositionX(), c->GetPositionY())));
+		//end bot
+        else
+        {
+            GridCoord p2 = Trinity::ComputeGridCoord(c->GetPositionX(), c->GetPositionY());
+            TC_LOG_ERROR("maps", "Active creature (GUID: %u Entry: %u) removed from grid[%u, %u] but spawn grid[%u, %u] was not loaded.",
+                c->GetGUID().GetCounter(), c->GetEntry(), p.x_coord, p.y_coord, p2.x_coord, p2.y_coord);
+        }
+    }*/
 }
 
 template<>

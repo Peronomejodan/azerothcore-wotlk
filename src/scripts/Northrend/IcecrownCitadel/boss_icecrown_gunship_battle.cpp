@@ -11,6 +11,7 @@
 #include "TransportMgr.h"
 #include "Vehicle.h"
 #include "icecrown_citadel.h"
+#include "SpellHistory.h"
 
 enum Texts
 {

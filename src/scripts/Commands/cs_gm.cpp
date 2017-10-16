@@ -49,7 +49,7 @@ public:
         if (!*args)
         {
             WorldSession* session = handler->GetSession();
-            if (!AccountMgr::IsPlayerAccount(session->GetSecurity()) && session->GetPlayer()->isGMChat())
+            if (!sAccountMgr->IsPlayerAccount(session->GetSecurity()) && session->GetPlayer()->isGMChat())
                 session->SendNotification(LANG_GM_CHAT_ON);
             else
                 session->SendNotification(LANG_GM_CHAT_OFF);
@@ -83,7 +83,7 @@ public:
             return false;
 
         Player* target =  handler->getSelectedPlayer();
-        if (!target || AccountMgr::IsGMAccount(handler->GetSession()->GetSecurity()))
+        if (!target || sAccountMgr->IsGMAccount(handler->GetSession()->GetSecurity()))
             target = handler->GetSession()->GetPlayer();
 
         WorldPacket data(12);
@@ -114,7 +114,7 @@ public:
         for (HashMapHolder<Player>::MapType::const_iterator itr = m.begin(); itr != m.end(); ++itr)
         {
             AccountTypes itrSec = itr->second->GetSession()->GetSecurity();
-            if ((itr->second->IsGameMaster() || (!AccountMgr::IsPlayerAccount(itrSec) && itrSec <= AccountTypes(sWorld->getIntConfig(CONFIG_GM_LEVEL_IN_GM_LIST)))) &&
+            if ((itr->second->IsGameMaster() || (!sAccountMgr->IsPlayerAccount(itrSec) && itrSec <= AccountTypes(sWorld->getIntConfig(CONFIG_GM_LEVEL_IN_GM_LIST)))) &&
                 (!handler->GetSession() || itr->second->IsVisibleGloballyFor(handler->GetSession()->GetPlayer())))
             {
                 if (first)

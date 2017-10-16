@@ -226,7 +226,7 @@ std::string Warden::Penalty(WardenCheck* check /*= NULL*/, uint16 checkFailed /*
             std::stringstream duration;
             duration << sWorld->getIntConfig(CONFIG_WARDEN_CLIENT_BAN_DURATION) << "s";
             std::string accountName;
-            AccountMgr::GetName(_session->GetAccountId(), accountName);
+            sAccountMgr->GetName(_session->GetAccountId(), accountName);
             sWorld->BanAccount(BAN_ACCOUNT, accountName, ((longBan && false /*ZOMG!*/) ? "1209600s" : duration.str()), banReason, "Server");
 
             return "Ban";

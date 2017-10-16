@@ -308,7 +308,7 @@ class UnitAI
         virtual void sOnGameEvent(bool /*start*/, uint16 /*eventId*/) {}
 };
 
-class PlayerAI : public UnitAI
+/*class PlayerAI : public UnitAI
 {
     protected:
         Player* const me;
@@ -323,6 +323,6 @@ class SimpleCharmedAI : public PlayerAI
     public:
         void UpdateAI(uint32 diff);
         SimpleCharmedAI(Player* player): PlayerAI(player) {}
-};
+};*/
 
 #endif

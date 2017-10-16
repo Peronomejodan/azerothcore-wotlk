@@ -302,6 +302,7 @@ class AuraEffect;
 class Creature;
 class Spell;
 class SpellInfo;
+class SpellHistory;
 class DynamicObject;
 class GameObject;
 class Item;
@@ -1349,6 +1350,8 @@ class Unit : public WorldObject
 		uint8 Preference = urand(0, 9);
 
         typedef UNORDERED_SET<Unit*> AttackerSet;
+
+        typedef std::set<Unit*> ControlList;
         typedef std::set<Unit*> ControlSet;
 
         typedef std::multimap<uint32,  Aura*> AuraMap;
@@ -1580,6 +1583,7 @@ class Unit : public WorldObject
         static void DealDamageMods(Unit const* victim, uint32 &damage, uint32* absorb);
         static uint32 DealDamage(Unit* attacker, Unit* victim, uint32 damage, CleanDamage const* cleanDamage = NULL, DamageEffectType damagetype = DIRECT_DAMAGE, SpellSchoolMask damageSchoolMask = SPELL_SCHOOL_MASK_NORMAL, SpellInfo const* spellProto = NULL, bool durabilityLoss = true, bool allowGM = false);
         static void Kill(Unit* killer, Unit* victim, bool durabilityLoss = true, WeaponAttackType attackType = BASE_ATTACK, SpellInfo const *spellProto = NULL);
+        void KillSelf(bool durabilityLoss = true) { Kill(this, this, durabilityLoss); }
         static int32 DealHeal(Unit* healer, Unit* victim, uint32 addhealth);
 
         void ProcDamageAndSpell(Unit* victim, uint32 procAttacker, uint32 procVictim, uint32 procEx, uint32 amount, WeaponAttackType attType = BASE_ATTACK, SpellInfo const* procSpell = NULL, SpellInfo const* procAura = NULL);
@@ -1814,7 +1818,7 @@ class Unit : public WorldObject
         bool isDead() const { return (m_deathState == DEAD || m_deathState == CORPSE); };
         DeathState getDeathState() { return m_deathState; };
         virtual void setDeathState(DeathState s, bool despawn = false);           // overwrited in Creature/Player/Pet
-
+        ObjectGuid GetOwnerGUIDObject() const { return GetGuidObject(UNIT_FIELD_SUMMONEDBY); }
         uint64 GetOwnerGUID() const { return  GetUInt64Value(UNIT_FIELD_SUMMONEDBY); }
         void SetOwnerGUID(uint64 owner);
         uint64 GetCreatorGUID() const { return GetUInt64Value(UNIT_FIELD_CREATEDBY); }
@@ -1822,10 +1826,11 @@ class Unit : public WorldObject
         uint64 GetMinionGUID() const { return GetUInt64Value(UNIT_FIELD_SUMMON); }
         void SetMinionGUID(uint64 guid) { SetUInt64Value(UNIT_FIELD_SUMMON, guid); }
         uint64 GetCharmerGUID() const { return GetUInt64Value(UNIT_FIELD_CHARMEDBY); }
+        ObjectGuid GetCharmerGUIDObject() const { return GetGuidObject(UNIT_FIELD_CHARMEDBY); }
         void SetCharmerGUID(uint64 owner) { SetUInt64Value(UNIT_FIELD_CHARMEDBY, owner); }
         uint64 GetCharmGUID() const { return  GetUInt64Value(UNIT_FIELD_CHARM); }
-        void SetPetGUID(uint64 guid) { m_SummonSlot[SUMMON_SLOT_PET] = guid; }
-        uint64 GetPetGUID() const { return m_SummonSlot[SUMMON_SLOT_PET]; }
+        void SetPetGUID(uint64 guid) { m_SummonSlot[SUMMON_SLOT_PET].Set(guid); }
+        uint64 GetPetGUID() const { return m_SummonSlot[SUMMON_SLOT_PET].GetRawValue(); }
         void SetCritterGUID(uint64 guid) { SetUInt64Value(UNIT_FIELD_CRITTER, guid); }
         uint64 GetCritterGUID() const { return GetUInt64Value(UNIT_FIELD_CRITTER); }
 
@@ -2057,7 +2062,10 @@ class Unit : public WorldObject
         Spell* FindCurrentSpellBySpellId(uint32 spell_id) const;
         int32 GetCurrentSpellCastTime(uint32 spell_id) const;
 
-        uint64 m_SummonSlot[MAX_SUMMON_SLOT];
+        SpellHistory* GetSpellHistory() { return m_spellHistory; }
+        SpellHistory const* GetSpellHistory() const { return m_spellHistory; }
+
+        ObjectGuid m_SummonSlot[MAX_SUMMON_SLOT];
         uint64 m_ObjectSlot[MAX_GAMEOBJECT_SLOT];
 
         ShapeshiftForm GetShapeshiftForm() const { return ShapeshiftForm(GetByteValue(UNIT_FIELD_BYTES_2, 3)); }
@@ -2427,6 +2435,7 @@ class Unit : public WorldObject
         int32 CalculateAOEDamageReduction(int32 damage, uint32 schoolMask, Unit* caster) const;
 
         uint64 GetTarget() const { return GetUInt64Value(UNIT_FIELD_TARGET); }
+        ObjectGuid GetGUIDTarget() const { return GetGuidObject(UNIT_FIELD_TARGET); }
         virtual void SetTarget(uint64 /*guid*/) = 0;
 
         void SetInstantCast(bool set) { _instantCast = set; }
@@ -2434,6 +2443,18 @@ class Unit : public WorldObject
 
         // Movement info
         Movement::MoveSpline * movespline;
+
+        //npcbot
+		bool HasReactive(ReactiveType reactive) const { return m_reactiveTimer[reactive] > 0; }
+		void ClearReactive(ReactiveType reactive);
+
+		void SuspendDelayedSwing();
+		void ExecuteDelayedSwingHit(bool extra = false);
+		CalcDamageInfo _damageInfo;
+		ObjectGuid _delayedTargetGuid;
+		uint32 _swingDelayTimer;
+		bool _swingLanded;
+		//end npcbot
 
     protected:
         explicit Unit (bool isWorldObject);
@@ -2559,6 +2580,7 @@ class Unit : public WorldObject
         bool m_duringRemoveFromWorld; // lock made to not add stuff after begining removing from world
 
         uint32 _oldFactionId;           ///< faction before charm
+        SpellHistory* m_spellHistory;
 };
 
 namespace Trinity

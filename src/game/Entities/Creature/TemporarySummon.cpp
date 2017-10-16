@@ -193,7 +193,7 @@ void TempSummon::InitStats(uint32 duration)
                 if (oldSummon && oldSummon->IsSummon())
                     oldSummon->ToTempSummon()->UnSummon();
             }
-            owner->m_SummonSlot[slot] = GetGUID();
+            owner->m_SummonSlot[slot] = GetGUIDObject();
         }
     }
 
@@ -249,6 +249,15 @@ void TempSummon::UnSummon(uint32 msTime)
     if (owner && owner->GetTypeId() == TYPEID_UNIT && owner->ToCreature()->IsAIEnabled)
         owner->ToCreature()->AI()->SummonedCreatureDespawn(this);
 
+    //npcbot
+	if (GetIAmABot() || GetIAmABotsPet())
+	{
+		//TC_LOG_ERROR("entities.player", "TempSummon::UnSummon(): Trying to unsummon Bot %s (guidLow: %u owner: %s)", GetName().c_str(), GetGUID().GetCounter(), GetBotOwner()->GetName().c_str());
+		if (IsTempBot())
+			AI()->JustDied(NULL);
+		return;
+	}
+	//end npcbots
     AddObjectToRemoveList();
 }
 
@@ -267,7 +276,7 @@ void TempSummon::RemoveFromWorld()
         if (uint32 slot = m_Properties->Slot)
             if (Unit* owner = GetSummoner())
                 if (owner->m_SummonSlot[slot] == GetGUID())
-                    owner->m_SummonSlot[slot] = 0;
+                    owner->m_SummonSlot[slot] = ObjectGuid::Empty;
 
     //if (GetOwnerGUID())
     //    sLog->outError("Unit %u has owner guid when removed from world", GetEntry());

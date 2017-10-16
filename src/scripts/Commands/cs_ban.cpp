@@ -148,7 +148,7 @@ public:
         switch (mode)
         {
             case BAN_ACCOUNT:
-                if (!AccountMgr::normalizeString(nameOrIP))
+                if (!sAccountMgr->normalizeString(nameOrIP))
                 {
                     handler->PSendSysMessage(LANG_ACCOUNT_NOT_EXIST, nameOrIP.c_str());
                     handler->SetSentErrorMessage(true);
@@ -212,14 +212,14 @@ public:
             return false;
 
         std::string accountName = nameStr;
-        if (!AccountMgr::normalizeString(accountName))
+        if (!sAccountMgr->normalizeString(accountName))
         {
             handler->PSendSysMessage(LANG_ACCOUNT_NOT_EXIST, accountName.c_str());
             handler->SetSentErrorMessage(true);
             return false;
         }
 
-        uint32 accountId = AccountMgr::GetId(accountName);
+        uint32 accountId = sAccountMgr->GetId(accountName);
         if (!accountId)
         {
             handler->PSendSysMessage(LANG_ACCOUNT_NOT_EXIST, accountName.c_str());
@@ -408,7 +408,7 @@ public:
                     accountName = fields[1].GetString();
                 // "character" case, name need extract from another DB
                 else
-                    AccountMgr::GetName(accountId, accountName);
+                    sAccountMgr->GetName(accountId, accountName);
 
                 // No SQL injection. id is uint32.
                 QueryResult banInfo = LoginDatabase.PQuery("SELECT bandate, unbandate, bannedby, banreason FROM account_banned WHERE id = %u ORDER BY unbandate", accountId);
@@ -672,7 +672,7 @@ public:
         switch (mode)
         {
             case BAN_ACCOUNT:
-                if (!AccountMgr::normalizeString(nameOrIP))
+                if (!sAccountMgr->normalizeString(nameOrIP))
                 {
                     handler->PSendSysMessage(LANG_ACCOUNT_NOT_EXIST, nameOrIP.c_str());
                     handler->SetSentErrorMessage(true);

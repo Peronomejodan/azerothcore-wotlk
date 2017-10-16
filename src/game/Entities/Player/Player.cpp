@@ -74,7 +74,12 @@
 #include "SavingSystem.h"
 #include "TicketMgr.h"
 #include "ScriptMgr.h"
+#include "SpellHistory.h"
 
+//npcbot
+
+//end npcbot
+#include "../../AI/NpcBots/botmgr.h"
  // Playerbot mod:
 #include "../../modules/bot/playerbot/playerbot.h"
 #include "../../modules/bot/playerbot/GuildTaskMgr.h"
@@ -693,7 +698,7 @@ Player::Player(WorldSession* session): Unit(true), m_mover(this)
     //m_pad = 0;
 
     // players always accept
-    if (AccountMgr::IsPlayerAccount(GetSession()->GetSecurity()))
+    if (sAccountMgr->IsPlayerAccount(GetSession()->GetSecurity()))
         SetAcceptWhispers(true);
 
     m_lootGuid = 0;
@@ -896,6 +901,10 @@ Player::Player(WorldSession* session): Unit(true), m_mover(this)
     m_timeSyncClient = 0;
     m_timeSyncServer = 0;
 
+    /////////////// Bot System //////////////////
+	_botMgr = NULL;
+    ///////////// End Bot System ////////////////
+
     for (uint8 i = 0; i < MAX_POWERS; ++i)
         m_powerFraction[i] = 0;
 
@@ -965,6 +974,13 @@ Player::~Player()
     delete m_achievementMgr;
     delete m_reputationMgr;
 
+	//npcbot
+	if (_botMgr)
+	{
+		delete _botMgr;
+		_botMgr = NULL;
+	}
+    //end npcbot
     sWorld->DecreasePlayerCount();
 
     if (!m_isInSharedVisionOf.empty())
@@ -1079,7 +1095,7 @@ bool Player::Create(uint32 guidlow, CharacterCreateInfo* createInfo)
         ? sWorld->getIntConfig(CONFIG_START_PLAYER_LEVEL)
         : sWorld->getIntConfig(CONFIG_START_HEROIC_PLAYER_LEVEL);
 
-    if (!AccountMgr::IsPlayerAccount(GetSession()->GetSecurity()))
+    if (!sAccountMgr->IsPlayerAccount(GetSession()->GetSecurity()))
     {
         uint32 gm_level = sWorld->getIntConfig(CONFIG_START_GM_LEVEL);
         if (gm_level > start_level)
@@ -1351,7 +1367,7 @@ bool Player::CreateBot(uint32 guidlow, BotCharacterCreateInfo* createInfo)
 		? sWorld->getIntConfig(CONFIG_START_PLAYER_LEVEL)
 		: sWorld->getIntConfig(CONFIG_START_HEROIC_PLAYER_LEVEL);
 
-	if (!AccountMgr::IsPlayerAccount(GetSession()->GetSecurity()))
+	if (!sAccountMgr->IsPlayerAccount(GetSession()->GetSecurity()))
 	{
 		uint32 gm_level = sWorld->getIntConfig(CONFIG_START_GM_LEVEL);
 		if (gm_level > start_level)
@@ -2209,6 +2225,11 @@ void Player::Update(uint32 p_time)
         RemoveFromNotify(NOTIFY_VISIBILITY_CHANGED);
     }
 
+    //NpcBot mod: Update
+	if (_botMgr)
+		_botMgr->Update(p_time);
+	//end Npcbot
+
 	// Playerbot mod
 	if (m_playerbotAI)
 		m_playerbotAI->UpdateAI(p_time);
@@ -2484,7 +2505,7 @@ bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientati
         return false;
     }
 
-    if (AccountMgr::IsPlayerAccount(GetSession()->GetSecurity()) && DisableMgr::IsDisabledFor(DISABLE_TYPE_MAP, mapid, this))
+    if (sAccountMgr->IsPlayerAccount(GetSession()->GetSecurity()) && DisableMgr::IsDisabledFor(DISABLE_TYPE_MAP, mapid, this))
     {
         sLog->outError("Player (GUID: %u, name: %s) tried to enter a forbidden map %u", GetGUIDLow(), GetName().c_str(), mapid);
         SendTransferAborted(mapid, TRANSFER_ABORT_MAP_NOT_ALLOWED);
@@ -2674,6 +2695,10 @@ bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientati
             // remove pet on map change
             if (pet)
                 UnsummonPetTemporaryIfAny();
+            //bot: teleport npcbots
+			if (HaveBot())
+				_botMgr->OnTeleportFar(mapid, x, y, z, orientation);
+			//end bot
 
             // remove all dyn objects
             RemoveAllDynObjects();
@@ -2881,6 +2906,37 @@ void Player::RemoveFromWorld()
         }
     }
 }
+//BOT
+bool Player::HaveBot() const
+{
+	return _botMgr && _botMgr->HaveBot();
+}
+
+uint8 Player::GetNpcBotsCount(bool inWorldOnly) const
+{
+	return HaveBot() ? _botMgr->GetNpcBotsCount(inWorldOnly) : 0;
+}
+
+uint8 Player::GetBotFollowDist() const
+{
+	return _botMgr ? _botMgr->GetBotFollowDist() : 30;
+}
+
+void Player::SetBotFollowDist(int8 dist)
+{
+	if (_botMgr) _botMgr->SetBotFollowDist(dist);
+}
+
+void Player::SetBotsShouldUpdateStats()
+{
+	if (HaveBot()) _botMgr->SetBotsShouldUpdateStats();
+}
+
+void Player::RemoveAllBots(uint8 removetype)
+{
+	if (HaveBot()) _botMgr->RemoveAllBots(removetype);
+}
+//END BOT
 
 void Player::RegenerateAll()
 { 
@@ -3171,6 +3227,10 @@ Creature* Player::GetNPCIfCanInteractWith(uint64 guid, uint32 npcflagmask)
     // not allow interaction under control, but allow with own pets
     if (creature->GetCharmerGUID())
         return NULL;
+    //npcbot
+	if ((creature->IsQuestBot() || creature->IsNPCBot()) && creature->IsWithinDistInMap(this, INTERACTION_DISTANCE))
+		return creature;
+	//end npcbot
 
     // xinef: perform better check
     if (creature->GetReactionTo(this) <= REP_UNFRIENDLY)
@@ -3288,14 +3348,14 @@ void Player::SetGameMaster(bool on)
     if (on)
     {
         m_ExtraFlags |= PLAYER_EXTRA_GM_ON;
-        if (AccountMgr::IsGMAccount(GetSession()->GetSecurity()))
+        if (sAccountMgr->IsGMAccount(GetSession()->GetSecurity()))
             setFaction(35);
         SetFlag(PLAYER_FLAGS, PLAYER_FLAGS_GM);
         SetFlag(UNIT_FIELD_FLAGS_2, UNIT_FLAG2_ALLOW_CHEAT_SPELLS);
 
         if (Pet* pet = GetPet())
         {
-            if (AccountMgr::IsGMAccount(GetSession()->GetSecurity()))
+            if (sAccountMgr->IsGMAccount(GetSession()->GetSecurity()))
                 pet->setFaction(35);
             pet->getHostileRefManager().setOnlineOfflineState(false);
         }
@@ -3411,11 +3471,45 @@ void Player::UninviteFromGroup()
 
 void Player::RemoveFromGroup(Group* group, uint64 guid, RemoveMethod method /* = GROUP_REMOVEMETHOD_DEFAULT*/, uint64 kicker /* = 0 */, const char* reason /* = NULL */)
 {
-    if (group)
-    {
-        group->RemoveMember(guid, method, kicker, reason);
-        group = NULL;
-    }
+    if (!group)
+        return;
+	if (group)
+	{
+		//npcbot - player is being removed from group - remove bots from that group
+		if (Player* player = ObjectAccessor::FindPlayer(guid))
+		{
+			if (player->HaveBot())
+			{
+				uint8 players = 0;
+				Group::MemberSlotList const& members = group->GetMemberSlots();
+				for (Group::member_citerator itr = members.begin(); itr != members.end(); ++itr)
+				{
+					if (ObjectAccessor::FindPlayer(itr->guid))
+						++players;
+				}
+
+				//remove npcbots and set up new group if needed
+				player->GetBotMgr()->RemoveAllBotsFromGroup(players > 1);
+				group = player->GetGroup();
+				if (!group)
+					return; //group has been disbanded
+			}
+		}
+		//npcbot - bot is being removed from group - find master and remove bot through botmap
+		/*else if (Creature* bot = ObjectAccessor::GetObjectInOrOutOfWorld(guid, (Creature*)NULL))
+		{
+		Player* master = bot->GetBotOwner();
+		if (master && master->GetTypeId() == TYPEID_PLAYER) //check for free bot just in case
+		{
+		master->GetBotMgr()->RemoveBotFromGroup(bot);
+		group = NULL;
+		return;
+		}
+		}*/
+	}
+	//end npcbot
+
+    group->RemoveMember(guid, method, kicker, reason);
 }
 
 void Player::SendLogXPGain(uint32 GivenXP, Unit* victim, uint32 BonusXP, bool recruitAFriend, float /*group_rate*/)
@@ -5314,6 +5408,14 @@ void Player::DeleteFromDB(uint64 playerguid, uint32 accountId, bool updateRealmC
             stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_CHAR_SKILLS);
             stmt->setUInt32(0, guid);
             trans->Append(stmt);
+
+			//npcbot - erase npcbots
+			stmt = CharacterDatabase.GetPreparedStatement(CHAR_UPD_NPCBOT_OWNER_ALL);
+			//"UPDATE characters_npcbot SET owner = ? WHERE owner = ?", CONNECTION_ASYNC
+			stmt->setUInt32(0, uint32(0));
+			stmt->setUInt32(1, guid);
+			trans->Append(stmt);
+			//end npcbot
 
             CharacterDatabase.CommitTransaction(trans);
             break;
@@ -7595,6 +7697,11 @@ bool Player::RewardHonor(Unit* uVictim, uint32 groupsize, int32 honor, bool awar
         }
         else
         {
+            //npcbot - honor for bots
+            Creature* victim = uVictim->ToCreature();
+			if (!(victim->ToCreature()->GetIAmABot() && victim->ToCreature()->IsFreeBot())) //exclude pets
+																							//TODO: honor rate
+																							//end npcbot
             if (!uVictim->ToCreature()->IsRacialLeader())
                 return false;
 
@@ -17918,7 +18025,7 @@ bool Player::LoadFromDB(uint32 guid, SQLQueryHolder *holder)
 
     // check name limitations
     if (ObjectMgr::CheckPlayerName(m_name) != CHAR_NAME_SUCCESS ||
-        (AccountMgr::IsPlayerAccount(GetSession()->GetSecurity()) && sObjectMgr->IsReservedName(m_name)))
+        (sAccountMgr->IsPlayerAccount(GetSession()->GetSecurity()) && sObjectMgr->IsReservedName(m_name)))
     {
         PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_UPD_ADD_AT_LOGIN_FLAG);
         stmt->setUInt16(0, uint16(AT_LOGIN_RENAME));
@@ -18437,7 +18544,7 @@ bool Player::LoadFromDB(uint32 guid, SQLQueryHolder *holder)
     outDebugValues();
 
     // GM state
-    if (!AccountMgr::IsPlayerAccount(GetSession()->GetSecurity()))
+    if (!sAccountMgr->IsPlayerAccount(GetSession()->GetSecurity()))
     {
         switch (sWorld->getIntConfig(CONFIG_GM_LOGIN_STATE))
         {
@@ -20536,7 +20643,7 @@ void Player::outDebugValues() const
 void Player::UpdateSpeakTime(uint32 specialMessageLimit)
 { 
     // ignore chat spam protection for GMs in any mode
-    if (!AccountMgr::IsPlayerAccount(GetSession()->GetSecurity()))
+    if (!sAccountMgr->IsPlayerAccount(GetSession()->GetSecurity()))
         return;
 
     time_t current = time (NULL);
@@ -22936,7 +23043,7 @@ bool Player::IsVisibleGloballyFor(Player const* u) const
         return true;
 
     // GMs are visible for higher gms (or players are visible for gms)
-    if (!AccountMgr::IsPlayerAccount(u->GetSession()->GetSecurity()))
+    if (!sAccountMgr->IsPlayerAccount(u->GetSession()->GetSecurity()))
         return GetSession()->GetSecurity() <= u->GetSession()->GetSecurity();
 
     // non faction visibility non-breakable for non-GMs
@@ -24736,6 +24843,12 @@ void Player::SetCanBlock(bool value)
 
     m_canBlock = value;
     UpdateBlockPercentage();
+}
+
+bool Player::IsUseEquipedWeapon(bool mainhand) const
+{
+    // disarm applied only to mainhand weapon
+    return !IsInFeralForm() && (!mainhand || !HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISARMED));
 }
 
 void Player::SetCanTitanGrip(bool value)

@@ -19,6 +19,7 @@
 #include "SpellInfo.h"
 #include "SpellAuraEffects.h"
 #include "WorldSession.h"
+#include "SpellHistory.h"
 
 int PetAI::Permissible(const Creature* creature)
 {

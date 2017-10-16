@@ -30,6 +30,7 @@
 #include "SpellAuraEffects.h"
 #include "Chat.h"
 #include "Vehicle.h"
+#include "SpellHistory.h"
 
 
 // Ours

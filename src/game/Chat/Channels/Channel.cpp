@@ -176,7 +176,7 @@ void Channel::JoinChannel(Player* player, std::string const& pass)
 
     if (HasFlag(CHANNEL_FLAG_LFG) &&
         sWorld->getBoolConfig(CONFIG_RESTRICTED_LFG_CHANNEL) &&
-        AccountMgr::IsPlayerAccount(player->GetSession()->GetSecurity()) &&
+        sAccountMgr->IsPlayerAccount(player->GetSession()->GetSecurity()) &&
         player->GetGroup())
     {
         WorldPacket data;
@@ -187,7 +187,7 @@ void Channel::JoinChannel(Player* player, std::string const& pass)
 
     player->JoinedChannel(this);
 
-    if (_announce && (!AccountMgr::IsGMAccount(player->GetSession()->GetSecurity()) ||
+    if (_announce && (!sAccountMgr->IsGMAccount(player->GetSession()->GetSecurity()) ||
                        !sWorld->getBoolConfig(CONFIG_SILENTLY_GM_JOIN_TO_CHANNEL)))
     {
         WorldPacket data;
@@ -260,7 +260,7 @@ void Channel::LeaveChannel(Player* player, bool send)
     bool changeowner = playersStore[guid].IsOwner();
 
     playersStore.erase(guid);
-    if (_announce && (!AccountMgr::IsGMAccount(player->GetSession()->GetSecurity()) ||
+    if (_announce && (!sAccountMgr->IsGMAccount(player->GetSession()->GetSecurity()) ||
                        !sWorld->getBoolConfig(CONFIG_SILENTLY_GM_JOIN_TO_CHANNEL)))
     {
         WorldPacket data;
@@ -309,7 +309,7 @@ void Channel::KickOrBan(Player const* player, std::string const& badname, bool b
         return;
     }
 
-    if (!playersStore[good].IsModerator() && !AccountMgr::IsGMAccount(sec))
+    if (!playersStore[good].IsModerator() && !sAccountMgr->IsGMAccount(sec))
     {
         WorldPacket data;
         MakeNotModerator(&data);
@@ -334,7 +334,7 @@ void Channel::KickOrBan(Player const* player, std::string const& badname, bool b
     bool isOnChannel = victim && IsOn(victim);
     if (!isOnChannel)
     {
-        if (ban && (AccountMgr::IsGMAccount(sec) || isGoodConstantModerator))
+        if (ban && (sAccountMgr->IsGMAccount(sec) || isGoodConstantModerator))
         {
             if (uint32 lowGuid = sWorld->GetGlobalPlayerGUID(badname))
                 if (const GlobalPlayerData* gpd = sWorld->GetGlobalPlayerData(lowGuid))
@@ -372,7 +372,7 @@ void Channel::KickOrBan(Player const* player, std::string const& badname, bool b
     bool changeowner = _ownerGUID == victim;
     bool isBadConstantModerator = _channelRights.moderators.find(badAccId) != _channelRights.moderators.end();
 
-    if (!AccountMgr::IsGMAccount(sec) && !isGoodConstantModerator)
+    if (!sAccountMgr->IsGMAccount(sec) && !isGoodConstantModerator)
     {
         if (changeowner && good != _ownerGUID)
         {
@@ -390,7 +390,7 @@ void Channel::KickOrBan(Player const* player, std::string const& badname, bool b
             return;
         }
 
-        if (isBadConstantModerator || AccountMgr::IsGMAccount(badSecurity))
+        if (isBadConstantModerator || sAccountMgr->IsGMAccount(badSecurity))
         {
             WorldPacket data;
             MakeNotModerator(&data);
@@ -399,7 +399,7 @@ void Channel::KickOrBan(Player const* player, std::string const& badname, bool b
         }
     }
 
-    bool notify = !(AccountMgr::IsGMAccount(sec) && sWorld->getBoolConfig(CONFIG_SILENTLY_GM_JOIN_TO_CHANNEL));
+    bool notify = !(sAccountMgr->IsGMAccount(sec) && sWorld->getBoolConfig(CONFIG_SILENTLY_GM_JOIN_TO_CHANNEL));
 
     if (ban)
     {
@@ -464,7 +464,7 @@ void Channel::UnBan(Player const* player, std::string const& badname)
         return;
     }
 
-    if (!playersStore[good].IsModerator() && !AccountMgr::IsGMAccount(sec))
+    if (!playersStore[good].IsModerator() && !sAccountMgr->IsGMAccount(sec))
     {
         WorldPacket data;
         MakeNotModerator(&data);
@@ -485,7 +485,7 @@ void Channel::UnBan(Player const* player, std::string const& badname)
     }
 
     bool isConstantModerator = _channelRights.moderators.find(player->GetSession()->GetAccountId()) != _channelRights.moderators.end();
-    if (!AccountMgr::IsGMAccount(sec) && !isConstantModerator)
+    if (!sAccountMgr->IsGMAccount(sec) && !isConstantModerator)
     {
         if (_channelRights.flags & CHANNEL_RIGHT_CANT_BAN)
         {
@@ -528,7 +528,7 @@ void Channel::Password(Player const* player, std::string const& pass)
         return;
     }
 
-    if (!playersStore[guid].IsModerator() && !AccountMgr::IsGMAccount(player->GetSession()->GetSecurity()))
+    if (!playersStore[guid].IsModerator() && !sAccountMgr->IsGMAccount(player->GetSession()->GetSecurity()))
     {
         WorldPacket data;
         MakeNotModerator(&data);
@@ -566,7 +566,7 @@ void Channel::SetMode(Player const* player, std::string const& p2n, bool mod, bo
         return;
     }
 
-    if (!playersStore[guid].IsModerator() && !AccountMgr::IsGMAccount(sec))
+    if (!playersStore[guid].IsModerator() && !sAccountMgr->IsGMAccount(sec))
     {
         WorldPacket data;
         MakeNotModerator(&data);
@@ -583,7 +583,7 @@ void Channel::SetMode(Player const* player, std::string const& p2n, bool mod, bo
     if (!victim || !IsOn(victim) ||
         // allow make moderator from another team only if both is GMs
         // at this moment this only way to show channel post for GM from another team
-        ((!AccountMgr::IsGMAccount(sec) || !AccountMgr::IsGMAccount(newp->GetSession()->GetSecurity())) && player->GetTeamId() != newp->GetTeamId() && 
+        ((!sAccountMgr->IsGMAccount(sec) || !sAccountMgr->IsGMAccount(newp->GetSession()->GetSecurity())) && player->GetTeamId() != newp->GetTeamId() && 
         !sWorld->getBoolConfig(CONFIG_ALLOW_TWO_SIDE_INTERACTION_CHANNEL)))
     {
         WorldPacket data;
@@ -609,7 +609,7 @@ void Channel::SetMode(Player const* player, std::string const& p2n, bool mod, bo
     else
     {
         bool isGoodConstantModerator = _channelRights.moderators.find(player->GetSession()->GetAccountId()) != _channelRights.moderators.end();
-        if (!AccountMgr::IsGMAccount(sec) && !isGoodConstantModerator)
+        if (!sAccountMgr->IsGMAccount(sec) && !isGoodConstantModerator)
         {
             if (_channelRights.flags & CHANNEL_RIGHT_CANT_MUTE)
             {
@@ -638,7 +638,7 @@ void Channel::SetOwner(Player const* player, std::string const& newname)
     }
 
     bool isGoodConstantModerator = _channelRights.moderators.find(player->GetSession()->GetAccountId()) != _channelRights.moderators.end();
-    if (!AccountMgr::IsGMAccount(sec) && guid != _ownerGUID && !isGoodConstantModerator)
+    if (!sAccountMgr->IsGMAccount(sec) && guid != _ownerGUID && !isGoodConstantModerator)
     {
         WorldPacket data;
         MakeNotOwner(&data);
@@ -697,7 +697,7 @@ void Channel::List(Player const* player)
     uint32 count  = 0;
     if (!(_channelRights.flags & CHANNEL_RIGHT_CANT_SPEAK))
         for (PlayerContainer::const_iterator i = playersStore.begin(); i != playersStore.end(); ++i)
-            if (AccountMgr::IsPlayerAccount(i->second.plrPtr->GetSession()->GetSecurity()))
+            if (sAccountMgr->IsPlayerAccount(i->second.plrPtr->GetSession()->GetSecurity()))
             {
                 data << uint64(i->first);
                 data << uint8(i->second.flags); // flags seems to be changed...
@@ -722,7 +722,7 @@ void Channel::Announce(Player const* player)
         return;
     }
 
-    if (!playersStore[guid].IsModerator() && !AccountMgr::IsGMAccount(sec))
+    if (!playersStore[guid].IsModerator() && !sAccountMgr->IsGMAccount(sec))
     {
         WorldPacket data;
         MakeNotModerator(&data);
@@ -1176,7 +1176,7 @@ void Channel::JoinNotify(Player* p)
 {
     if (_channelRights.flags & CHANNEL_RIGHT_CANT_SPEAK)
         return;
-    if (!AccountMgr::IsPlayerAccount(p->GetSession()->GetSecurity()))
+    if (!sAccountMgr->IsPlayerAccount(p->GetSession()->GetSecurity()))
         return;
 
     WorldPacket data(SMSG_USERLIST_ADD, 8 + 1 + 1 + 4 + GetName().size());
@@ -1193,7 +1193,7 @@ void Channel::LeaveNotify(Player* p)
 {
     if (_channelRights.flags & CHANNEL_RIGHT_CANT_SPEAK)
         return;
-    if (!AccountMgr::IsPlayerAccount(p->GetSession()->GetSecurity()))
+    if (!sAccountMgr->IsPlayerAccount(p->GetSession()->GetSecurity()))
         return;
 
     WorldPacket data(SMSG_USERLIST_REMOVE, 8 + 1 + 4 + GetName().size());
@@ -1209,7 +1209,7 @@ void Channel::FlagsNotify(Player* p)
 {
     if (_channelRights.flags & CHANNEL_RIGHT_CANT_SPEAK)
         return;
-    if (!AccountMgr::IsPlayerAccount(p->GetSession()->GetSecurity()))
+    if (!sAccountMgr->IsPlayerAccount(p->GetSession()->GetSecurity()))
         return;
 
     WorldPacket data(SMSG_USERLIST_UPDATE, 8 + 1 + 1 + 4 + GetName().size());

@@ -95,6 +95,8 @@ include_directories(
   ${CMAKE_SOURCE_DIR}/src/game/AI/CoreAI
   ${CMAKE_SOURCE_DIR}/src/game/AI/ScriptedAI
   ${CMAKE_SOURCE_DIR}/src/game/AI/SmartScripts
+  ${CMAKE_SOURCE_DIR}/src/game/AI/NpcBots
+  ${CMAKE_SOURCE_DIR}/src/game/AI/PlayerAI
   ${CMAKE_SOURCE_DIR}/src/game/AuctionHouse
   ${CMAKE_SOURCE_DIR}/src/game/AuctionHouseBot
   ${CMAKE_SOURCE_DIR}/src/game/Battlefield

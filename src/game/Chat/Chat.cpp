@@ -106,13 +106,13 @@ bool ChatHandler::HasLowerSecurityAccount(WorldSession* target, uint32 target_ac
         return false;
 
     // ignore only for non-players for non strong checks (when allow apply command at least to same sec level)
-    if (!AccountMgr::IsPlayerAccount(m_session->GetSecurity()) && !strong && !sWorld->getBoolConfig(CONFIG_GM_LOWER_SECURITY))
+    if (!sAccountMgr->IsPlayerAccount(m_session->GetSecurity()) && !strong && !sWorld->getBoolConfig(CONFIG_GM_LOWER_SECURITY))
         return false;
 
     if (target)
         target_sec = target->GetSecurity();
     else if (target_account)
-        target_sec = AccountMgr::GetSecurity(target_account, realmID);
+        target_sec = sAccountMgr->GetSecurity(target_account, realmID);
     else
         return true;                                        // caller must report error for (target == NULL && target_account == 0)
 
@@ -295,7 +295,7 @@ bool ChatHandler::ExecuteCommandInTable(std::vector<ChatCommand> const& table, c
                 return true;
 
             Player* player = m_session->GetPlayer();
-            if (!AccountMgr::IsPlayerAccount(m_session->GetSecurity()))
+            if (!sAccountMgr->IsPlayerAccount(m_session->GetSecurity()))
             {
                 uint64 guid = player->GetTarget();
                 uint32 areaId = player->GetAreaId();
@@ -396,7 +396,7 @@ bool ChatHandler::ParseCommands(char const* text)
 
     std::string fullcmd = text;
 
-    if (m_session && AccountMgr::IsPlayerAccount(m_session->GetSecurity()) && !sWorld->getBoolConfig(CONFIG_ALLOW_PLAYER_COMMANDS))
+    if (m_session && sAccountMgr->IsPlayerAccount(m_session->GetSecurity()) && !sWorld->getBoolConfig(CONFIG_ALLOW_PLAYER_COMMANDS))
        return false;
 
     /// chat case (.command or !command format)
@@ -421,7 +421,7 @@ bool ChatHandler::ParseCommands(char const* text)
 
     if (!ExecuteCommandInTable(getCommandTable(), text, fullcmd))
     {
-        if (m_session && AccountMgr::IsPlayerAccount(m_session->GetSecurity()))
+        if (m_session && sAccountMgr->IsPlayerAccount(m_session->GetSecurity()))
             return false;
 
         SendSysMessage(LANG_NO_CMD);

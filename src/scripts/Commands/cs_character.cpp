@@ -125,7 +125,7 @@ public:
                 info.accountId  = fields[2].GetUInt32();
 
                 // account name will be empty for nonexisting account
-                AccountMgr::GetName(info.accountId, info.accountName);
+                sAccountMgr->GetName(info.accountId, info.accountName);
                 info.deleteDate = time_t(fields[3].GetUInt32());
                 foundList.push_back(info);
             }
@@ -191,7 +191,7 @@ public:
         }
 
         // check character count
-        uint32 charcount = AccountMgr::GetCharactersCount(delInfo.accountId);
+        uint32 charcount = sAccountMgr->GetCharactersCount(delInfo.accountId);
         if (charcount >= 10)
         {
             handler->PSendSysMessage(LANG_CHARACTER_DELETED_SKIP_FULL, delInfo.name.c_str(), delInfo.lowGuid, delInfo.accountId);
@@ -578,7 +578,7 @@ public:
             if (newAccount && newAccount != delInfo.accountId)
             {
                 delInfo.accountId = newAccount;
-                AccountMgr::GetName(newAccount, delInfo.accountName);
+                sAccountMgr->GetName(newAccount, delInfo.accountName);
             }
 
             HandleCharacterDeletedRestoreHelper(delInfo, handler);
@@ -702,7 +702,7 @@ public:
         }
 
         std::string accountName;
-        AccountMgr::GetName(accountId, accountName);
+        sAccountMgr->GetName(accountId, accountName);
 
         Player::DeleteFromDB(characterGuid, accountId, true, true);
         handler->PSendSysMessage(LANG_CHARACTER_DELETED, characterName.c_str(), characterGuid, accountName.c_str(), accountId);
@@ -764,14 +764,14 @@ public:
             return false;
 
         std::string accountName = accountStr;
-        if (!AccountMgr::normalizeString(accountName))
+        if (!sAccountMgr->normalizeString(accountName))
         {
             handler->PSendSysMessage(LANG_ACCOUNT_NOT_EXIST, accountName.c_str());
             handler->SetSentErrorMessage(true);
             return false;
         }
 
-        uint32 accountId = AccountMgr::GetId(accountName);
+        uint32 accountId = sAccountMgr->GetId(accountName);
         if (!accountId)
         {
             accountId = atoi(accountStr);                             // use original string
@@ -783,7 +783,7 @@ public:
             }
         }
 
-        if (!AccountMgr::GetName(accountId, accountName))
+        if (!sAccountMgr->GetName(accountId, accountName))
         {
             handler->PSendSysMessage(LANG_ACCOUNT_NOT_EXIST, accountName.c_str());
             handler->SetSentErrorMessage(true);

@@ -1295,7 +1295,7 @@ public:
         char* limitStr = strtok(nullptr, " ");
         int32 limit = limitStr ? atoi(limitStr) : -1;
 
-        if (!AccountMgr::normalizeString
+        if (!sAccountMgr->normalizeString
             (account))
             return false;
 

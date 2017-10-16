@@ -681,6 +681,12 @@ class SpellMgr
 
         // SpellInfo object management
         SpellInfo const* GetSpellInfo(uint32 spellId) const { return spellId < GetSpellInfoStoreSize() ?  mSpellInfoMap[spellId] : NULL; }
+        // Use this only with 100% valid spellIds
+        SpellInfo const* AssertSpellInfo(uint32 spellId) const
+        {
+            SpellInfo const* spellInfo = mSpellInfoMap[spellId];
+            return spellInfo;
+        }
         uint32 GetSpellInfoStoreSize() const { return mSpellInfoMap.size(); }
 
         // Talent Additional Set

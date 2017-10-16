@@ -16,6 +16,7 @@
 #include "Player.h"
 #include "SpellMgr.h"
 #include "TemporarySummon.h"
+#include "SpellHistory.h"
 
 enum MageSpells
 {

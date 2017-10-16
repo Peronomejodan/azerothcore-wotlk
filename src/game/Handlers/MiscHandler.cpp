@@ -290,7 +290,7 @@ void WorldSession::HandleWhoOpcode(WorldPacket& recvData)
     HashMapHolder<Player>::MapType const& m = sObjectAccessor->GetPlayers();
     for (HashMapHolder<Player>::MapType::const_iterator itr = m.begin(); itr != m.end(); ++itr)
     {
-        if (AccountMgr::IsPlayerAccount(security))
+        if (sAccountMgr->IsPlayerAccount(security))
         {
             // player can see member of other team only if CONFIG_ALLOW_TWO_SIDE_WHO_LIST
             if (itr->second->GetTeamId() != team  && !allowTwoSideWhoList)
@@ -590,20 +590,20 @@ void WorldSession::HandleAddFriendOpcode(WorldPacket & recv_data)
     TeamId teamId = Player::TeamIdForRace(playerData->race);
     FriendsResult friendResult = FRIEND_NOT_FOUND;
 
-    if (!AccountMgr::IsPlayerAccount(GetSecurity()) || sWorld->getBoolConfig(CONFIG_ALLOW_GM_FRIEND) || AccountMgr::IsPlayerAccount(AccountMgr::GetSecurity(friendAccountId, realmID)))
+    if (!sAccountMgr->IsPlayerAccount(GetSecurity()) || sWorld->getBoolConfig(CONFIG_ALLOW_GM_FRIEND) || sAccountMgr->IsPlayerAccount(sAccountMgr->GetSecurity(friendAccountId, realmID)))
     {
         if (friendGuid)
         {
             if (friendGuid == GetPlayer()->GetGUID())
                 friendResult = FRIEND_SELF;
-            else if (GetPlayer()->GetTeamId() != teamId && !sWorld->getBoolConfig(CONFIG_ALLOW_TWO_SIDE_ADD_FRIEND)  && AccountMgr::IsPlayerAccount(GetSecurity()))
+            else if (GetPlayer()->GetTeamId() != teamId && !sWorld->getBoolConfig(CONFIG_ALLOW_TWO_SIDE_ADD_FRIEND)  && sAccountMgr->IsPlayerAccount(GetSecurity()))
                 friendResult = FRIEND_ENEMY;
             else if (GetPlayer()->GetSocial()->HasFriend(guidLow))
                 friendResult = FRIEND_ALREADY;
             else
             {
                 Player* pFriend = ObjectAccessor::FindPlayerInOrOutOfWorld(friendGuid);
-                if (pFriend && pFriend->IsVisibleGloballyFor(GetPlayer()) && !AccountMgr::IsGMAccount(pFriend->GetSession()->GetSecurity()))
+                if (pFriend && pFriend->IsVisibleGloballyFor(GetPlayer()) && !sAccountMgr->IsGMAccount(pFriend->GetSession()->GetSecurity()))
                     friendResult = FRIEND_ADDED_ONLINE;
                 else
                     friendResult = FRIEND_ADDED_OFFLINE;
@@ -1323,7 +1323,7 @@ void WorldSession::HandleWorldTeleportOpcode(WorldPacket& recv_data)
     sLog->outDebug(LOG_FILTER_NETWORKIO, "CMSG_WORLD_TELEPORT: Player = %s, Time = %u, map = %u, x = %f, y = %f, z = %f, o = %f", GetPlayer()->GetName().c_str(), time, mapid, PositionX, PositionY, PositionZ, Orientation);
 #endif
 
-    if (AccountMgr::IsAdminAccount(GetSecurity()))
+    if (sAccountMgr->IsAdminAccount(GetSecurity()))
         GetPlayer()->TeleportTo(mapid, PositionX, PositionY, PositionZ, Orientation);
     else
         SendNotification(LANG_YOU_NOT_HAVE_PERMISSION);
@@ -1337,7 +1337,7 @@ void WorldSession::HandleWhoisOpcode(WorldPacket& recv_data)
     std::string charname;
     recv_data >> charname;
 
-    if (!AccountMgr::IsAdminAccount(GetSecurity()))
+    if (!sAccountMgr->IsAdminAccount(GetSecurity()))
     {
         SendNotification(LANG_YOU_NOT_HAVE_PERMISSION);
         return;

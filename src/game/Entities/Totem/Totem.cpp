@@ -14,6 +14,7 @@
 #include "SpellMgr.h"
 #include "SpellInfo.h"
 #include "WorldPacket.h"
+#include "SpellHistory.h"
 
 Totem::Totem(SummonPropertiesEntry const* properties, uint64 owner) : Minion(properties, owner, false)
 {
@@ -110,7 +111,7 @@ void Totem::UnSummon(uint32 msTime)
     {
         if (m_owner->m_SummonSlot[i] == GetGUID())
         {
-            m_owner->m_SummonSlot[i] = 0;
+            m_owner->m_SummonSlot[i] = ObjectGuid::Empty;
             break;
         }
     }
@@ -139,6 +140,12 @@ void Totem::UnSummon(uint32 msTime)
             }
         }
     }
+	//npcbot: send SummonedCreatureDespawn()
+	if (IS_CREATURE_GUID(GetCreatorGUID()))
+		if (Unit* bot = ObjectAccessor::FindConnectedPlayer(GetCreatorGUID()))
+			if (bot->ToCreature()->GetIAmABot())
+				bot->ToCreature()->OnBotDespawn(this);
+	//end npcbot
 
     AddObjectToRemoveList();
 }

@@ -57,6 +57,7 @@
 #include "InstanceScript.h"
 #include "ReputationMgr.h"
 #include "Transport.h"
+#include "SpellHistory.h"
 
 pEffect SpellEffects[TOTAL_SPELL_EFFECTS]=
 {

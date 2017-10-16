@@ -13,6 +13,7 @@
 #include "SpellInfo.h"
 #include "Spell.h"
 #include "CreatureAIImpl.h"
+#include "../PlayerAI/PlayerAI.h"
 
 void UnitAI::AttackStart(Unit* victim)
 {
@@ -240,13 +241,13 @@ void UnitAI::FillAISpellInfo()
 }
 
 //Enable PlayerAI when charmed
-void PlayerAI::OnCharmed(bool apply)
+/*void PlayerAI::OnCharmed(bool apply)
 {
     me->IsAIEnabled = apply;
-}
+}*/
 
-void SimpleCharmedAI::UpdateAI(uint32 /*diff*/)
-{
+//void SimpleCharmedAI::UpdateAI(uint32 /*diff*/)
+/*{
   Creature* charmer = me->GetCharmer()->ToCreature();
 
     //kill self if charm aura has infinite duration
@@ -267,7 +268,7 @@ void SimpleCharmedAI::UpdateAI(uint32 /*diff*/)
     Unit* target = me->GetVictim();
     if (!target || !charmer->IsValidAttackTarget(target))
         AttackStart(charmer->SelectNearestTargetInAttackDistance(ATTACK_DISTANCE));
-}
+}*/
 
 SpellTargetSelector::SpellTargetSelector(Unit* caster, uint32 spellId) :
     _caster(caster), _spellInfo(sSpellMgr->GetSpellForDifficultyFromSpell(sSpellMgr->GetSpellInfo(spellId), caster))

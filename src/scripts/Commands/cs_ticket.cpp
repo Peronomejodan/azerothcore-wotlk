@@ -84,10 +84,10 @@ public:
         // Get target information
         uint64 targetGuid = sObjectMgr->GetPlayerGUIDByName(target.c_str());
         uint64 targetAccountId = sObjectMgr->GetPlayerAccountIdByGUID(targetGuid);
-        uint32 targetGmLevel = AccountMgr::GetSecurity(targetAccountId, realmID);
+        uint32 targetGmLevel = sAccountMgr->GetSecurity(targetAccountId, realmID);
 
         // Target must exist and have administrative rights
-        if (!targetGuid || AccountMgr::IsPlayerAccount(targetGmLevel))
+        if (!targetGuid || sAccountMgr->IsPlayerAccount(targetGmLevel))
         {
             handler->SendSysMessage(LANG_COMMAND_TICKETASSIGNERROR_A);
             return true;
@@ -111,7 +111,7 @@ public:
 
         // Assign ticket
         SQLTransaction trans = SQLTransaction(nullptr);
-        ticket->SetAssignedTo(targetGuid, AccountMgr::IsAdminAccount(targetGmLevel));
+        ticket->SetAssignedTo(targetGuid, sAccountMgr->IsAdminAccount(targetGmLevel));
         ticket->SaveToDB(trans);
         sTicketMgr->UpdateLastChange();
 
@@ -381,7 +381,7 @@ public:
         {
             uint64 guid = ticket->GetAssignedToGUID();
             uint32 accountId = sObjectMgr->GetPlayerAccountIdByGUID(guid);
-            security = AccountMgr::GetSecurity(accountId, realmID);
+            security = sAccountMgr->GetSecurity(accountId, realmID);
         }
 
         // Check security

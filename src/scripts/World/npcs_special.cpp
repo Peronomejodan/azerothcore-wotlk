@@ -49,6 +49,7 @@ EndContentData */
 #include "WaypointManager.h"
 #include "SmartAI.h"
 #include "DBCStructure.h"
+#include "SpellHistory.h"
 
 enum elderClearwater
 {

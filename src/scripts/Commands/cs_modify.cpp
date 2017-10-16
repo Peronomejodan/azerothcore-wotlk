@@ -476,7 +476,7 @@ public:
         }
 
         Player* target = handler->getSelectedPlayerOrSelf();
-        if (AccountMgr::IsGMAccount(handler->GetSession()->GetSecurity()))
+        if (sAccountMgr->IsGMAccount(handler->GetSession()->GetSecurity()))
             target = handler->GetSession()->GetPlayer();
         if (!target)
         {
@@ -526,7 +526,7 @@ public:
         }
 
         Player* target = handler->getSelectedPlayerOrSelf();
-        if (AccountMgr::IsGMAccount(handler->GetSession()->GetSecurity()))
+        if (sAccountMgr->IsGMAccount(handler->GetSession()->GetSecurity()))
             target = handler->GetSession()->GetPlayer();
         if (!target)
         {
@@ -573,7 +573,7 @@ public:
         }
 
         Player* target = handler->getSelectedPlayerOrSelf();
-        if (AccountMgr::IsGMAccount(handler->GetSession()->GetSecurity()))
+        if (sAccountMgr->IsGMAccount(handler->GetSession()->GetSecurity()))
             target = handler->GetSession()->GetPlayer();
         if (!target)
         {
@@ -620,7 +620,7 @@ public:
         }
 
         Player* target = handler->getSelectedPlayerOrSelf();
-        if (AccountMgr::IsGMAccount(handler->GetSession()->GetSecurity()))
+        if (sAccountMgr->IsGMAccount(handler->GetSession()->GetSecurity()))
             target = handler->GetSession()->GetPlayer();
         if (!target)
         {
@@ -667,7 +667,7 @@ public:
         }
 
         Player* target = handler->getSelectedPlayerOrSelf();
-        if (AccountMgr::IsGMAccount(handler->GetSession()->GetSecurity()))
+        if (sAccountMgr->IsGMAccount(handler->GetSession()->GetSecurity()))
             target = handler->GetSession()->GetPlayer();
         if (!target)
         {

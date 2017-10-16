@@ -2297,7 +2297,7 @@ uint64 PlayerbotFactory::GetRandomBot()
 	for (list<uint32>::iterator i = sPlayerbotAIConfig.randomBotAccounts.begin(); i != sPlayerbotAIConfig.randomBotAccounts.end(); i++)
 	{
 		uint32 accountId = *i;
-		if (!AccountMgr::GetCharactersCount(accountId))
+		if (!sAccountMgr->GetCharactersCount(accountId))
 			continue;
 
 		QueryResult result = CharacterDatabase.PQuery("SELECT guid FROM characters WHERE account = '%u'", accountId);

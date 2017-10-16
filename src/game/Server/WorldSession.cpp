@@ -431,6 +431,10 @@ void WorldSession::LogoutPlayer(bool save)
     m_playerLogout = true;
     m_playerSave = save;
 
+	//npcbot - free all bots and remove from botmap
+	_player->RemoveAllBots();
+	//end npcbots
+
     if (_player)
     {
         if (uint64 lguid = _player->GetLootGUID())
@@ -545,7 +549,7 @@ void WorldSession::LogoutPlayer(bool save)
         }
 
         //! Broadcast a logout message to the player's friends
-        if (AccountMgr::IsGMAccount(GetSecurity())) // pussywizard: only for non-gms
+        if (sAccountMgr->IsGMAccount(GetSecurity())) // pussywizard: only for non-gms
             sSocialMgr->SendFriendStatus(_player, FRIEND_OFFLINE, _player->GetGUIDLow(), true);
         sSocialMgr->RemovePlayerSocial(_player->GetGUIDLow());
 

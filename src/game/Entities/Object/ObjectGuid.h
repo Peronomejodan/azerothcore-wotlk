@@ -96,4 +96,12 @@ class ObjectGuid
         uint64 _guid;
 };
 
+// Some Shared defines
+//typedef std::set<ObjectGuid> GuidSet;
+typedef std::list<ObjectGuid> GuidList;
+typedef std::deque<ObjectGuid> GuidDeque;
+typedef std::vector<ObjectGuid> GuidVector;
+typedef std::unordered_set<ObjectGuid> GuidUnorderedSet;
+
+
 #endif // ObjectGuid_h__

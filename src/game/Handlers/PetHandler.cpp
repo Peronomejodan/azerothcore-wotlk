@@ -21,6 +21,7 @@
 #include "SpellInfo.h"
 #include "Player.h"
 #include "Chat.h"
+#include "SpellHistory.h"
 
 class LoadPetFromDBQueryHolder : public SQLQueryHolder
 {

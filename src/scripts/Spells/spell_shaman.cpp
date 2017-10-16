@@ -16,6 +16,7 @@
 #include "SpellScript.h"
 #include "SpellAuraEffects.h"
 #include "TemporarySummon.h"
+#include "SpellHistory.h"
 
 enum ShamanSpells
 {

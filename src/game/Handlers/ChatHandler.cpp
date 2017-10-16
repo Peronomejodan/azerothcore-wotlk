@@ -52,7 +52,7 @@ void WorldSession::HandleMessagechatOpcode(WorldPacket & recvData)
     //sLog->outDebug("CHAT: packet received. type %u, lang %u", type, lang);
 
     // pussywizard: chatting on most chat types requires 2 hours played to prevent spam/abuse
-    if (AccountMgr::IsPlayerAccount(GetSecurity()))
+    if (sAccountMgr->IsPlayerAccount(GetSecurity()))
         switch (type)
         {
             case CHAT_MSG_ADDON:
@@ -348,8 +348,8 @@ void WorldSession::HandleMessagechatOpcode(WorldPacket & recvData)
             }
 
             Player* receiver = ObjectAccessor::FindPlayerByName(to, false);
-            bool senderIsPlayer = AccountMgr::IsPlayerAccount(GetSecurity());
-            bool receiverIsPlayer = AccountMgr::IsPlayerAccount(receiver ? receiver->GetSession()->GetSecurity() : SEC_PLAYER);
+            bool senderIsPlayer = sAccountMgr->IsPlayerAccount(GetSecurity());
+            bool receiverIsPlayer = sAccountMgr->IsPlayerAccount(receiver ? receiver->GetSession()->GetSecurity() : SEC_PLAYER);
             if (!receiver || (senderIsPlayer && !receiverIsPlayer && !receiver->isAcceptWhispers() && !receiver->IsInWhisperWhiteList(sender->GetGUID())))
             {
                 SendPlayerNotFoundNotice(to);
@@ -566,7 +566,7 @@ void WorldSession::HandleMessagechatOpcode(WorldPacket & recvData)
         } break;
         case CHAT_MSG_CHANNEL:
         {
-            if (AccountMgr::IsPlayerAccount(GetSecurity()))
+            if (sAccountMgr->IsPlayerAccount(GetSecurity()))
             {
                 if (sender->getLevel() < sWorld->getIntConfig(CONFIG_CHAT_CHANNEL_LEVEL_REQ))
                 {

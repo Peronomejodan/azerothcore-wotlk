@@ -77,7 +77,7 @@ int ns1__executeCommand(soap* soap, char* command, char** result)
         return 401;
     }
 
-    uint32 accountId = AccountMgr::GetId(soap->userid);
+    uint32 accountId = sAccountMgr->GetId(soap->userid);
     if (!accountId)
     {
 #if defined(ENABLE_EXTRAS) && defined(ENABLE_EXTRA_LOGS)
@@ -86,7 +86,7 @@ int ns1__executeCommand(soap* soap, char* command, char** result)
         return 401;
     }
 
-    if (!AccountMgr::CheckPassword(accountId, soap->passwd))
+    if (!sAccountMgr->CheckPassword(accountId, soap->passwd))
     {
 #if defined(ENABLE_EXTRAS) && defined(ENABLE_EXTRA_LOGS)
         sLog->outDebug(LOG_FILTER_NETWORKIO, "TCSoap: invalid password for account '%s'", soap->userid);
@@ -94,7 +94,7 @@ int ns1__executeCommand(soap* soap, char* command, char** result)
         return 401;
     }
 
-    if (AccountMgr::GetSecurity(accountId) < SEC_ADMINISTRATOR)
+    if (sAccountMgr->GetSecurity(accountId) < SEC_ADMINISTRATOR)
     {
 #if defined(ENABLE_EXTRAS) && defined(ENABLE_EXTRA_LOGS)
         sLog->outDebug(LOG_FILTER_NETWORKIO, "TCSoap: %s's gmlevel is too low", soap->userid);

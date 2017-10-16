@@ -1261,7 +1261,7 @@ class go_wind_stone : public GameObjectScript
                 if (result == SPELL_FAILED_REAGENTS)
                 {
                     std::string accountName;
-                    AccountMgr::GetName(player->GetSession()->GetAccountId(), accountName);
+                    sAccountMgr->GetName(player->GetSession()->GetAccountId(), accountName);
                     sWorld->BanAccount(BAN_ACCOUNT, accountName, "0s", "Wind Stone exploit", "Server");
                 }
                 return;

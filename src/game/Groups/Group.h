@@ -290,6 +290,9 @@ class Group
         // FG: evil hacks
         void BroadcastGroupUpdate(void);
 
+        //Bot
+		uint64 const* GetTargetIcons() const { return m_targetIcons; }
+
 		// ai playerbot mod
 		uint64 GetTargetIcon(int index) { return m_targetIcons[index]; }
 		Rolls* GetRolls() { return &RollId; }

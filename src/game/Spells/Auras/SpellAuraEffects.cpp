@@ -28,6 +28,7 @@
 #include "Pet.h"
 #include "ReputationMgr.h"
 #include "InstanceScript.h"
+#include "SpellHistory.h"
 
 class Aura;
 //

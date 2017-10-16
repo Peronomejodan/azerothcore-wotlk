@@ -306,7 +306,7 @@ void World::AddSession_(WorldSession* s)
     // don't count this session when checking player limit
     --Sessions;
 
-    if (pLimit > 0 && Sessions >= pLimit && AccountMgr::IsPlayerAccount(s->GetSecurity()) && !s->CanSkipQueue() && !HasRecentlyDisconnected(s))
+    if (pLimit > 0 && Sessions >= pLimit && sAccountMgr->IsPlayerAccount(s->GetSecurity()) && !s->CanSkipQueue() && !HasRecentlyDisconnected(s))
     {
         AddQueuedPlayer (s);
         UpdateMaxSessionCounters();
@@ -626,7 +626,7 @@ void World::LoadConfigSettings(bool reload)
     m_int_configs[CONFIG_PRESERVE_CUSTOM_CHANNEL_DURATION] = sConfigMgr->GetIntDefault("PreserveCustomChannelDuration", 14);
     m_int_configs[CONFIG_INTERVAL_DISCONNECT_TOLERANCE] = sConfigMgr->GetIntDefault("DisconnectToleranceInterval", 0);
     m_bool_configs[CONFIG_STATS_SAVE_ONLY_ON_LOGOUT] = sConfigMgr->GetBoolDefault("PlayerSave.Stats.SaveOnlyOnLogout", true);
-
+    m_int_configs[CONFIG_INTERVAL_SAVE] = sConfigMgr->GetIntDefault("PlayerSaveInterval", 15 * MINUTE * IN_MILLISECONDS);
     m_int_configs[CONFIG_MIN_LEVEL_STAT_SAVE] = sConfigMgr->GetIntDefault("PlayerSave.Stats.MinLevel", 0);
     if (m_int_configs[CONFIG_MIN_LEVEL_STAT_SAVE] > MAX_LEVEL)
     {
@@ -2195,7 +2195,7 @@ void World::SendGlobalGMMessage(WorldPacket* packet, WorldSession* self, TeamId 
             itr->second->GetPlayer() &&
             itr->second->GetPlayer()->IsInWorld() &&
             itr->second != self &&
-            !AccountMgr::IsPlayerAccount(itr->second->GetSecurity()) &&
+            !sAccountMgr->IsPlayerAccount(itr->second->GetSecurity()) &&
             (teamId == TEAM_NEUTRAL || itr->second->GetPlayer()->GetTeamId() == teamId))
         {
             itr->second->SendPacket(packet);
@@ -2280,7 +2280,7 @@ void World::SendGMText(int32 string_id, ...)
         if (!itr->second || !itr->second->GetPlayer() || !itr->second->GetPlayer()->IsInWorld())
             continue;
 
-        if (AccountMgr::IsPlayerAccount(itr->second->GetSecurity()))
+        if (sAccountMgr->IsPlayerAccount(itr->second->GetSecurity()))
             continue;
 
         wt_do(itr->second->GetPlayer());
@@ -2463,7 +2463,7 @@ bool World::RemoveBanAccount(BanMode mode, std::string const& nameOrIP)
     {
         uint32 account = 0;
         if (mode == BAN_ACCOUNT)
-            account = AccountMgr::GetId(nameOrIP);
+            account = sAccountMgr->GetId(nameOrIP);
         else if (mode == BAN_CHARACTER)
             account = sObjectMgr->GetPlayerAccountIdByPlayerName(nameOrIP);
 
