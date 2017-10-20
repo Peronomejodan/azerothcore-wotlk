@@ -76,9 +76,29 @@ void RandomPlayerbotMgr::UpdateAIInternal(uint32 elapsed)
 
 uint32 RandomPlayerbotMgr::AddRandomBot(bool alliance)
 {
-    vector<uint32> bots = GetFreeBots(alliance);
-    if (bots.size() == 0)
-        return 0;
+	set<uint32> bots;
+
+	QueryResult results = CharacterDatabase.PQuery(
+		"select `bot` from ai_playerbot_random_bots where event = 'add'");
+
+	if (results)
+	{
+		do
+		{
+			Field* fields = results->Fetch();
+			uint32 bot = fields[0].GetUInt32();
+			bots.insert(bot);
+		} while (results->NextRow());
+	}
+
+	vector<uint32> guids;
+	int maxAllowedBotCount = GetEventValue(0, "bot_count");
+	for (list<uint32>::iterator i = sPlayerbotAIConfig.randomBotAccounts.begin(); i != sPlayerbotAIConfig.randomBotAccounts.end(); i++)
+	{
+		uint32 accountId = *i;
+		if (!sAccountMgr->GetCharactersCount(accountId))
+			continue;
+
 
     int index = urand(0, bots.size() - 1);
     uint32 bot = bots[index];
@@ -529,49 +549,6 @@ list<uint32> RandomPlayerbotMgr::GetBots()
     return bots;
 }
 
-vector<uint32> RandomPlayerbotMgr::GetFreeBots(bool alliance)
-{
-    set<uint32> bots;
-
-    QueryResult results = CharacterDatabase.PQuery(
-            "select `bot` from ai_playerbot_random_bots where event = 'add'");
-
-    if (results)
-    {
-        do
-        {
-            Field* fields = results->Fetch();
-            uint32 bot = fields[0].GetUInt32();
-            bots.insert(bot);
-        } while (results->NextRow());
-    }
-
-    vector<uint32> guids;
-    for (list<uint32>::iterator i = sPlayerbotAIConfig.randomBotAccounts.begin(); i != sPlayerbotAIConfig.randomBotAccounts.end(); i++)
-    {
-        uint32 accountId = *i;
-        if (!sAccountMgr->GetCharactersCount(accountId))
-            continue;
-
-        QueryResult result = CharacterDatabase.PQuery("SELECT guid, race FROM characters WHERE account = '%u'", accountId);
-        if (!result)
-            continue;
-
-        do
-        {
-            Field* fields = result->Fetch();
-            uint32 guid = fields[0].GetUInt32();
-            uint8 race = fields[1].GetUInt8();
-            if (bots.find(guid) == bots.end() &&
-                    ((alliance && IsAlliance(race)) || ((!alliance && !IsAlliance(race))
-            )))
-                guids.push_back(guid);
-        } while (result->NextRow());
-    }
-
-
-    return guids;
-}
 
 uint32 RandomPlayerbotMgr::GetEventValue(uint32 bot, string event)
 {
