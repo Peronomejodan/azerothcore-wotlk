@@ -34,17 +34,18 @@ bool PlayerbotAIConfig::Initialize()
 
     string error;
 	vector<string> args;
+
     char const* cfg_file = _TRINITY_BOT_CONFIG;
     if (!config.LoadInitial(cfg_file))
     {
-        sLog->outBasic("AI Playerbot is Disabled. Unable to open configuration file aiplayerbot.conf");
+        sLog->outBasic("AI Playerbot is Disabled. Unable to open configuration file bot_playerbots.conf");
         return false;
     }
 
     enabled = config.GetBoolDefault("AiPlayerbot.Enabled", true);
     if (!enabled)
     {
-        sLog->outBasic("AI Playerbot is Disabled in aiplayerbot.conf");
+        sLog->outBasic("AI Playerbot is Disabled in bot_playerbots.conf");
         return false;
     }
 
